@@ -1,0 +1,348 @@
+/* ================================================================
+   TNSA Global Styles — Mobile-First Premium Black & Gold Design
+   ================================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base Styles ── */
+@layer base {
+  :root {
+    --gold: #D4AF37;
+    --gold-light: #F0C940;
+    --gold-dark: #A88B2A;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #111111;
+    --bg-card: #1a1a1a;
+    --bg-elevated: #242424;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255,255,255,0.7);
+    --text-muted: rgba(255,255,255,0.4);
+    --border-color: rgba(212, 175, 55, 0.2);
+    --border-subtle: rgba(255,255,255,0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply font-poppins bg-bg-primary text-white antialiased;
+    min-height: 100dvh;
+    min-height: 100vh;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100dvh;
+    min-height: 100vh;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #111111;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D4AF37;
+    border-radius: 2px;
+  }
+
+  /* Input autofill styling */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff;
+    -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+/* ── Component Classes ── */
+@layer components {
+  /* Glass card */
+  .glass-card {
+    @apply bg-bg-card border border-white/10 rounded-2xl;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  /* Gold glass card */
+  .glass-card-gold {
+    @apply bg-bg-card rounded-2xl;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.1), inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  }
+
+  /* Gold button */
+  .btn-gold {
+    @apply bg-gold-gradient text-dark-900 font-semibold rounded-xl px-6 py-3 transition-all duration-200;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+  }
+  .btn-gold:hover {
+    @apply scale-[1.02];
+    box-shadow: 0 6px 24px rgba(212, 175, 55, 0.5);
+  }
+  .btn-gold:active {
+    @apply scale-[0.98];
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply border border-white/20 text-white font-medium rounded-xl px-6 py-3 transition-all duration-200 hover:border-gold/40 hover:bg-white/5;
+  }
+
+  /* Gold border input */
+  .input-gold {
+    @apply bg-bg-elevated border border-white/10 rounded-xl px-4 py-3 text-white w-full transition-all duration-200;
+    outline: none;
+  }
+  .input-gold:focus {
+    border-color: rgba(212, 175, 55, 0.6);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+  }
+  .input-gold::placeholder {
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* Gold gradient text */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #F0C940 0%, #D4AF37 50%, #A88B2A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Shimmer loading */
+  .shimmer {
+    background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Gold divider */
+  .gold-divider {
+    @apply h-px w-full;
+    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  }
+
+  /* Safe area bottom padding for mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  /* Bottom nav safe area */
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Touch target minimum size */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Gold badge */
+  .badge-gold {
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full;
+    background: rgba(212, 175, 55, 0.15);
+    color: #F0C940;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+  }
+
+  /* Status badges */
+  .badge-active {
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full;
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+  .badge-inactive {
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  .badge-pending {
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full;
+    background: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+  }
+
+  /* TNSA card styles */
+  .membership-card {
+    width: 340px;
+    height: 540px;
+    background: #000000;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Admin sidebar item */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer;
+    color: rgba(255,255,255,0.6);
+  }
+  .sidebar-item:hover {
+    @apply bg-white/5;
+    color: #D4AF37;
+  }
+  .sidebar-item.active {
+    background: rgba(212, 175, 55, 0.15);
+    color: #F0C940;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply glass-card-gold p-4 flex flex-col gap-2;
+  }
+
+  /* Table styles */
+  .table-row {
+    @apply border-b border-white/5 hover:bg-white/5 transition-colors duration-150;
+  }
+
+  /* Page transition wrapper */
+  .page-wrapper {
+    @apply min-h-screen w-full;
+  }
+}
+
+/* ── Utilities ── */
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Gold glow effect */
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+  }
+
+  /* Subtle gold border gradient */
+  .gold-border-gradient {
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+  }
+  .gold-border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #D4AF37, transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Truncate text at N lines */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ── Animations ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 10px rgba(212,175,55,0.3); }
+  to   { box-shadow: 0 0 30px rgba(212,175,55,0.7); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Page transition animations */
+.page-enter {
+  animation: slideUp 0.3s ease forwards;
+}
+
+/* Bottom nav transitions */
+.nav-tab {
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+.nav-tab.active {
+  color: #D4AF37;
+}
+.nav-tab:active {
+  transform: scale(0.92);
+}
+
+/* Gold corner decorations (card design) */
+.corner-tl {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 40px;
+  height: 40px;
+  border-top: 2px solid #D4AF37;
+  border-left: 2px solid #D4AF37;
+  border-radius: 4px 0 0 0;
+}
+.corner-tr {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  border-top: 2px solid #D4AF37;
+  border-right: 2px solid #D4AF37;
+  border-radius: 0 4px 0 0;
+}
+.corner-bl {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  width: 40px;
+  height: 40px;
+  border-bottom: 2px solid #D4AF37;
+  border-left: 2px solid #D4AF37;
+  border-radius: 0 0 0 4px;
+}
+.corner-br {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  border-bottom: 2px solid #D4AF37;
+  border-right: 2px solid #D4AF37;
+  border-radius: 0 0 4px 0;
+}
