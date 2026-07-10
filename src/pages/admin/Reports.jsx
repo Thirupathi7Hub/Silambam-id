@@ -8,7 +8,7 @@ import AdminLayout from '@/layouts/AdminLayout';
 import { GlassCard, GoldButton, SelectField } from '@/components/ui';
 import { DISTRICTS } from '@/constants/districts';
 import { CATEGORIES, GENDERS } from '@/constants/app';
-import { prepareMembersForExport, exportAsCSV } from '@/utils/helpers';
+import { prepareMembersForExport, exportAsPDF } from '@/utils/helpers';
 
 const AdminReports = () => {
   const [exporting, setExporting] = useState(false);
@@ -27,7 +27,7 @@ const AdminReports = () => {
     return prepareMembersForExport(members);
   };
 
-  const handleExportCSV = async () => {
+  const handleExportPDF = async () => {
     setExporting(true);
     try {
       const data = await getFilteredData();
@@ -35,8 +35,8 @@ const AdminReports = () => {
         toast.error('No members match the selected filters');
         return;
       }
-      exportAsCSV(data, `TNSA_Member_Report_${new Date().toISOString().slice(0,10)}.csv`);
-      toast.success('CSV Report exported');
+      exportAsPDF(data, `TNSA_Member_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+      toast.success('PDF Report exported');
     } catch (err) {
       toast.error('Export failed');
     } finally {
@@ -105,11 +105,11 @@ const AdminReports = () => {
           <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3 justify-end">
             <GoldButton
               variant="ghost"
-              onClick={handleExportCSV}
+              onClick={handleExportPDF}
               loading={exporting}
               icon={<FileText size={16} />}
             >
-              Export as CSV
+              Export as PDF
             </GoldButton>
             <GoldButton
               onClick={handleExportExcel}

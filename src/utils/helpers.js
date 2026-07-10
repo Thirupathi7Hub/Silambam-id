@@ -1,5 +1,6 @@
 // Utility helper functions for TNSA app
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { jsPDF } from 'jspdf';
 
 /**
  * Format a Firestore Timestamp or Date to display string
@@ -149,6 +150,148 @@ export const exportAsCSV = (data, filename = 'members.csv') => {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+};
+
+/**
+ * Export data as PDF file
+ */
+export const exportAsPDF = (data, filename = 'members.pdf') => {
+  if (!data.length) return;
+
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const columns = [
+    { header: 'S.No', key: 'sno', width: 12 },
+    { header: 'Membership ID', key: 'Membership ID', width: 35 },
+    { header: 'Name', key: 'Name', width: 45 },
+    { header: 'District', key: 'District', width: 35 },
+    { header: 'Category', key: 'Category', width: 30 },
+    { header: 'Mobile', key: 'Mobile', width: 30 },
+    { header: 'Club Name', key: 'Club Name', width: 50 },
+    { header: 'Status', key: 'Status', width: 25 }
+  ];
+
+  let pageNumber = 1;
+  const startX = 15;
+  const startY = 35;
+  let currentY = startY;
+  const rowHeight = 8;
+  const pageHeight = 210;
+  const bottomMargin = 15;
+
+  const drawHeader = () => {
+    // Report Title
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(212, 175, 55); // Gold color (#D4AF37)
+    doc.text('TAMILNADU SILAMBATTAM ASSOCIATION (TNSA)', 15, 15);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Membership Directory — Generated on ${format(new Date(), 'dd MMM yyyy')}`, 15, 21);
+
+    // Draw thin gold line under title
+    doc.setDrawColor(212, 175, 55);
+    doc.setLineWidth(0.5);
+    doc.line(15, 24, 282, 24);
+
+    // Draw Table Headers
+    doc.setFillColor(26, 26, 26); // Dark primary color
+    doc.rect(startX, 28, 267, rowHeight, 'F');
+    
+    doc.setFontSize(9);
+    doc.setFont('Helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+
+    let x = startX;
+    columns.forEach(col => {
+      // Center S.No and Status
+      if (col.key === 'sno' || col.key === 'Status') {
+        doc.text(col.header, x + col.width / 2, 28 + 5, { align: 'center' });
+      } else {
+        doc.text(col.header, x + 2, 28 + 5);
+      }
+      x += col.width;
+    });
+
+    currentY = startY + 1;
+  };
+
+  const drawFooter = () => {
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Page ${pageNumber}`, 282, pageHeight - 8, { align: 'right' });
+    doc.text('TNSA Official Membership Database Report', 15, pageHeight - 8);
+  };
+
+  drawHeader();
+  drawFooter();
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(50, 50, 50);
+
+  data.forEach((row, index) => {
+    // Check if we need a new page
+    if (currentY + rowHeight > pageHeight - bottomMargin) {
+      doc.addPage();
+      pageNumber++;
+      drawHeader();
+      drawFooter();
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(50, 50, 50);
+    }
+
+    // Draw Zebra striping
+    if (index % 2 === 1) {
+      doc.setFillColor(245, 245, 245);
+      doc.rect(startX, currentY, 267, rowHeight, 'F');
+    }
+
+    // Draw row cell borders
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.1);
+    doc.line(startX, currentY + rowHeight, startX + 267, currentY + rowHeight);
+
+    let x = startX;
+    columns.forEach(col => {
+      let val = col.key === 'sno' ? String(index + 1) : String(row[col.key] || '—');
+      
+      // Clean status values
+      if (col.key === 'Status') {
+        val = val.toUpperCase();
+        if (val === 'ACTIVE') doc.setTextColor(34, 197, 94); // Green
+        else if (val === 'INACTIVE') doc.setTextColor(239, 68, 68); // Red
+        else doc.setTextColor(234, 179, 8); // Yellow
+      } else {
+        doc.setTextColor(50, 50, 50);
+      }
+
+      // Truncate to fit column width
+      const maxChars = Math.floor(col.width * 1.3);
+      if (val.length > maxChars) {
+        val = val.slice(0, maxChars - 2) + '..';
+      }
+
+      if (col.key === 'sno' || col.key === 'Status') {
+        doc.text(val, x + col.width / 2, currentY + 5, { align: 'center' });
+      } else {
+        doc.text(val, x + 2, currentY + 5);
+      }
+      x += col.width;
+    });
+
+    currentY += rowHeight;
+  });
+
+  // Save the PDF
+  doc.save(filename);
 };
 
 /**
