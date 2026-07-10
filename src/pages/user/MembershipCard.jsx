@@ -18,8 +18,7 @@ const H = 543;
 const CARD_FONT = 'Arial, "Helvetica Neue", Helvetica, sans-serif';
 
 // ── Card Front ────────────────────────────────────────────────────────────
-// ── Card Front ────────────────────────────────────────────────────────────
-const CardFront = React.forwardRef(({ member, scale = 1 }, ref) => {
+export const CardFront = React.forwardRef(({ member, scale = 1 }, ref) => {
   const currentW = W * scale;
   const currentH = H * scale;
 
@@ -141,7 +140,7 @@ const CardFront = React.forwardRef(({ member, scale = 1 }, ref) => {
 CardFront.displayName = 'CardFront';
 
 // ── Card Back ─────────────────────────────────────────────────────────────
-const CardBack = React.forwardRef(({ member, scale = 1 }, ref) => {
+export const CardBack = React.forwardRef(({ member, scale = 1 }, ref) => {
   const currentW = W * scale;
   const currentH = H * scale;
 

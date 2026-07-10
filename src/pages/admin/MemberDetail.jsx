@@ -16,102 +16,10 @@ import html2canvas from 'html2canvas';
 import { QRCodeSVG } from 'qrcode.react';
 import { VALID_TILL_YEAR, APP_PHONE, APP_EMAIL, APP_INSTAGRAM, APP_FACEBOOK } from '@/constants/app';
 
-// ── Shared Card Elements (Duplicate for admin rendering off-screen) ──
-const CardFront = React.forwardRef(({ member }, ref) => (
-  <div ref={ref} style={{ width:'340px', height:'520px', background:'#000', borderRadius:'16px', overflow:'hidden', position:'relative', fontFamily:'Georgia, serif', flexShrink: 0 }}>
-    <div style={{ position:'absolute', top:10, left:10, width:40, height:40, borderTop:'2px solid #D4AF37', borderLeft:'2px solid #D4AF37', borderRadius:'4px 0 0 0' }} />
-    <div style={{ position:'absolute', top:10, right:10, width:40, height:40, borderTop:'2px solid #D4AF37', borderRight:'2px solid #D4AF37', borderRadius:'0 4px 0 0' }} />
-    <div style={{ position:'absolute', bottom:10, left:10, width:40, height:40, borderBottom:'2px solid #D4AF37', borderLeft:'2px solid #D4AF37', borderRadius:'0 0 0 4px' }} />
-    <div style={{ position:'absolute', bottom:10, right:10, width:40, height:40, borderBottom:'2px solid #D4AF37', borderRight:'2px solid #D4AF37', borderRadius:'0 0 4px 0' }} />
-    <div style={{ padding:'20px 20px 16px', display:'flex', flexDirection:'column', height:'100%', position:'relative', zIndex:1 }}>
-      <div style={{ textAlign:'center', marginBottom:'10px' }}>
-        <div style={{ width:60, height:60, borderRadius:'50%', border:'2px solid #D4AF37', margin:'0 auto 8px', background:'rgba(212,175,55,0.1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', fontWeight:'bold', color:'#D4AF37' }}>TNSA</div>
-        <div style={{ color:'#D4AF37', fontSize:'11px', fontWeight:'bold', letterSpacing:'1px', lineHeight:'1.3' }}>TAMILNADU SILAMBATTAM ASSOCIATION</div>
-        <div style={{ color:'rgba(255,255,255,0.6)', fontSize:'9px', fontStyle:'italic', marginTop:'2px' }}>( Regd.No:232/1980 )</div>
-        <div style={{ background:'linear-gradient(135deg, #D4AF37, #A88B2A)', borderRadius:'6px', padding:'4px 8px', margin:'6px 0', fontSize:'8px', color:'#000', textAlign:'center', lineHeight:'1.4' }}>Address : #41, Natesan Nagar, 3rd main road, Virugambakkam, Chennai - 92</div>
-        <div style={{ color:'#ffffff', fontSize:'14px', fontWeight:'900', letterSpacing:'1px', marginTop:'4px' }}>TNSA - MEMBERSHIP CARD</div>
-      </div>
-      <div style={{ display:'flex', justifyContent:'center', marginBottom:'12px' }}>
-        <div style={{ width:90, height:90, borderRadius:'50%', border:'3px solid #D4AF37', overflow:'hidden', background:'rgba(212,175,55,0.1)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-          {member?.photoURL ? <img src={member.photoURL} alt="Member" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <span style={{ color:'#D4AF37', fontSize:'24px', fontWeight:'bold' }}>{member?.name?.[0] || '?'}</span>}
-        </div>
-      </div>
-      <div style={{ flex:1, paddingLeft:'8px' }}>
-        {[
-          ['Name', member?.name],
-          ['Membership ID', member?.membershipId],
-          ['District', member?.district],
-          ['Date Of Birth', member?.dob ? formatDate(member.dob) : '—'],
-          ['Gender', member?.gender],
-          ['Aadhar', member?.aadhaar ? `XXXX XXXX ${member.aadhaar.slice(-4)}` : '—'],
-          ['Category', member?.category],
-        ].map(([label, value]) => (
-          <div key={label} style={{ display:'flex', alignItems:'baseline', marginBottom:'5px', gap:'6px' }}>
-            <span style={{ color:'#ffffff', fontSize:'10px', fontStyle:'italic', minWidth:'82px', flexShrink:0 }}>{label}</span>
-            <span style={{ color:'#D4AF37', fontSize:'10px' }}>:</span>
-            <span style={{ color:'#ffffff', fontSize:'10px', fontWeight:'500', flex:1 }}>{value || '—'}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'flex-end', marginTop:'4px' }}>
-        <div style={{ textAlign:'center' }}>
-          <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'18px', fontFamily:'cursive', marginBottom:'2px' }}>Rly</div>
-          <div style={{ color:'rgba(255,255,255,0.6)', fontSize:'8px', borderTop:'1px solid rgba(255,255,255,0.2)', paddingTop:'2px' }}>President - TNSA</div>
-        </div>
-      </div>
-    </div>
-  </div>
-));
-CardFront.displayName = 'CardFront';
+import { CardFront, CardBack } from '@/pages/user/MembershipCard';
 
-const CardBack = React.forwardRef(({ member }, ref) => {
-  const verifyUrl = `${window.location.origin}/verify/${member?.membershipId}`;
-  return (
-    <div ref={ref} style={{ width:'340px', height:'520px', background:'#000', borderRadius:'16px', overflow:'hidden', position:'relative', fontFamily:'Georgia, serif', flexShrink:0 }}>
-      <div style={{ position:'absolute', top:10, left:10, width:40, height:40, borderTop:'2px solid #D4AF37', borderLeft:'2px solid #D4AF37', borderRadius:'4px 0 0 0' }} />
-      <div style={{ position:'absolute', top:10, right:10, width:40, height:40, borderTop:'2px solid #D4AF37', borderRight:'2px solid #D4AF37', borderRadius:'0 4px 0 0' }} />
-      <div style={{ position:'absolute', bottom:10, left:10, width:40, height:40, borderBottom:'2px solid #D4AF37', borderLeft:'2px solid #D4AF37', borderRadius:'0 0 0 4px' }} />
-      <div style={{ position:'absolute', bottom:10, right:10, width:40, height:40, borderBottom:'2px solid #D4AF37', borderRight:'2px solid #D4AF37', borderRadius:'0 0 4px 0' }} />
-      <div style={{ padding:'20px', display:'flex', flexDirection:'column', height:'100%', position:'relative', zIndex:1 }}>
-        <div style={{ textAlign:'center', marginBottom:'14px' }}>
-          <div style={{ color:'#D4AF37', fontSize:'11px', fontWeight:'bold', letterSpacing:'1px' }}>TAMILNADU SILAMBATTAM ASSOCIATION</div>
-          <div style={{ color:'rgba(255,255,255,0.5)', fontSize:'9px', fontStyle:'italic' }}>( Regd.No:232/1980 )</div>
-        </div>
-        <div style={{ marginBottom:'14px' }}>
-          {[
-            ['Father Name', member?.fatherName],
-            ['Club Name', member?.clubName],
-            ['Position in TNSA', member?.position],
-            ['Contact Number', member?.mobile],
-            ['Address', member?.address],
-          ].map(([label, value]) => (
-            <div key={label} style={{ display:'flex', marginBottom:'8px', gap:'6px', alignItems:'flex-start' }}>
-              <span style={{ color:'#ffffff', fontSize:'10px', fontStyle:'italic', minWidth:'96px', flexShrink:0 }}>{label}</span>
-              <span style={{ color:'#D4AF37', fontSize:'10px', flexShrink:0 }}>:</span>
-              <span style={{ color:'#ffffff', fontSize:'10px', flex:1, lineHeight:'1.3' }}>{value || '—'}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{ border:'1px solid #D4AF37', borderRadius:'8px', padding:'10px', marginBottom:'12px', fontSize:'8px', color:'rgba(255,255,255,0.75)', lineHeight:'1.6', textAlign:'justify' }}>
-          I agree to abide by and be bound by the Constitution, Rules, Regulations, Code of Conduct, and Disciplinary Procedures of the <span style={{ color:'#D4AF37' }}>Tamil Nadu Silambattam Association (TNSA)</span> and the <span style={{ color:'#D4AF37' }}>Indian Silambam Federation (ISF)</span>, as amended from time to time.
-        </div>
-        <div style={{ display:'flex', justify:'center', justifyContent:'center', marginBottom:'10px' }}>
-          <div style={{ background:'white', padding:'6px', borderRadius:'8px' }}>
-            <QRCodeSVG value={verifyUrl} size={60} level="M" />
-          </div>
-        </div>
-        <div style={{ marginBottom:'8px', fontSize:'8px', color:'rgba(255,255,255,0.6)', textAlign:'center', lineHeight:'1.8' }}>
-          <div>   {APP_PHONE} &nbsp;|&nbsp; 📷 {APP_INSTAGRAM} &nbsp;|&nbsp; fb {APP_FACEBOOK}</div>
-          <div>✉ {APP_EMAIL}</div>
-        </div>
-        <div style={{ textAlign:'center', marginTop:'auto' }}>
-          <div style={{ color:'#D4AF37', fontSize:'13px', fontWeight:'bold', letterSpacing:'2px', borderTop:'1px solid rgba(212,175,55,0.3)', paddingTop:'8px' }}>VALID TILL : {VALID_TILL_YEAR}</div>
-        </div>
-      </div>
-    </div>
-  );
-});
-CardBack.displayName = 'CardBack';
+const DOWNLOAD_SCALE = 2.470588;
+
 
 const AdminMemberDetail = () => {
   const { uid } = useParams();
@@ -215,49 +123,70 @@ const AdminMemberDetail = () => {
       }
     }
   };
+  const captureCard = useCallback(async (ref) => {
+    if (!ref.current) return null;
+    return html2canvas(ref.current, {
+      scale: 1, // Already scaled to high-res in markup
+      backgroundColor: null,
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+    });
+  }, []);
 
   const downloadCard = useCallback(async (side = 'front') => {
     const ref = side === 'front' ? frontRef : backRef;
-    if (!ref.current) return;
     setDownloading(true);
     try {
-      const canvas = await html2canvas(ref.current, {
-        scale: 2,
-        backgroundColor: '#000000',
-        useCORS: true,
-        allowTaint: true,
-      });
-      const url = canvas.toDataURL('image/png');
+      const canvas = await captureCard(ref);
+      if (!canvas) return;
       const link = document.createElement('a');
-      link.download = `TNSA-Card-${member?.membershipId}-${side}.png`;
-      link.href = url;
+      link.download = `TNSA-${member?.membershipId || 'Card'}-${side}.png`;
+      link.href = canvas.toDataURL('image/png');
       link.click();
-      toast.success('Downloaded successfully');
-    } catch (err) {
-      toast.error('Download failed');
+      toast.success(`${side === 'front' ? 'Front' : 'Back'} downloaded!`);
+    } catch {
+      toast.error('Download failed. Try again.');
     } finally {
       setDownloading(false);
     }
-  }, [member]);
+  }, [member, captureCard]);
 
   const printCard = useCallback(async () => {
+    setDownloading(true);
     try {
-      const frontCanvas = await html2canvas(frontRef.current, { scale: 2, backgroundColor:'#000', useCORS:true });
-      const backCanvas = await html2canvas(backRef.current, { scale: 2, backgroundColor:'#000', useCORS:true });
+      const [fc, bc] = await Promise.all([
+        captureCard(frontRef),
+        captureCard(backRef),
+      ]);
       const win = window.open('', '_blank');
       win.document.write(`
-        <html><head><title>TNSA Card - ${member?.membershipId}</title>
-        <style>body { margin:0; display:flex; flex-direction:column; align-items:center; gap:20px; padding:20px; } img { border-radius:16px; max-width:340px; }</style></head><body>
-        <img src="${frontCanvas.toDataURL()}" />
-        <img src="${backCanvas.toDataURL()}" />
-        <script>window.onload = () => { window.print(); window.close(); }</script>
+        <html><head><title>TNSA Membership Card — ${member?.membershipId}</title>
+        <style>
+          * { margin:0; padding:0; box-sizing:border-box; }
+          body { background:#f0f0f0; display:flex; flex-direction:column;
+                 align-items:center; gap:20px; padding:20px; }
+          img { display:block; border-radius:12px; width:320px;
+                box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+          p { font-family:sans-serif; font-size:11px; color:#888;
+              text-align:center; margin-top:-12px; }
+          @media print { body { background:white; padding:8px; gap:12px; }
+                          img { width:280px; } }
+        </style></head><body>
+        <img src="${fc.toDataURL('image/png')}" />
+        <p>Front Side</p>
+        <img src="${bc.toDataURL('image/png')}" />
+        <p>Back Side</p>
+        <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),1000);}</script>
         </body></html>
       `);
       win.document.close();
     } catch {
       toast.error('Print failed');
+    } finally {
+      setDownloading(false);
     }
-  }, [member]);
+  }, [member, captureCard]);
 
   if (loading) {
     return (
@@ -359,8 +288,8 @@ const AdminMemberDetail = () => {
 
             {/* Offline Off-screen Card rendering */}
             <div style={{ position:'fixed', left:'-9999px', top:0, pointerEvents:'none', zIndex:-1 }}>
-              <CardFront ref={frontRef} member={member} />
-              <CardBack ref={backRef} member={member} />
+              <CardFront ref={frontRef} member={member} scale={DOWNLOAD_SCALE} />
+              <CardBack ref={backRef} member={member} scale={DOWNLOAD_SCALE} />
             </div>
 
             {/* Dynamic Card Actions */}
