@@ -9,9 +9,90 @@ import { GlassCard, GoldButton, Badge, Avatar, StatsCard } from '@/components/ui
 import { formatDate, maskAadhaar } from '@/utils/helpers';
 import { VALID_TILL_YEAR } from '@/constants/app';
 
+const DashboardSkeleton = () => (
+  <AppLayout showProfile={false}>
+    <div className="space-y-5 pb-4 animate-pulse">
+      {/* ── Hero Profile Card Skeleton ── */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-5"
+        style={{
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #111111 100%)',
+          border: '1px solid rgba(212, 175, 55, 0.15)',
+        }}
+      >
+        {/* Gold corner decorations */}
+        <div className="corner-tl opacity-30" />
+        <div className="corner-tr opacity-30" />
+        <div className="corner-bl opacity-30" />
+        <div className="corner-br opacity-30" />
+
+        {/* Greeting shimmer */}
+        <div className="h-4 w-32 shimmer rounded-md mb-5" />
+
+        {/* Profile row shimmer */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-16 h-16 rounded-full shimmer flex-shrink-0" />
+          <div className="flex-1 space-y-2 min-w-0">
+            <div className="h-5 w-40 shimmer rounded-md" />
+            <div className="flex gap-2">
+              <div className="h-5 w-16 shimmer rounded-full" />
+              <div className="h-5 w-16 shimmer rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Membership ID box shimmer */}
+        <div className="rounded-xl p-3 mb-4"
+          style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="h-3.5 w-24 shimmer rounded-md mb-2" />
+          <div className="h-6 w-48 shimmer rounded-md" />
+        </div>
+
+        {/* Info grid shimmer */}
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-3 w-16 shimmer rounded-md" />
+              <div className="h-4 w-28 shimmer rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Quick Actions Skeleton ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-11 shimmer rounded-xl" />
+        <div className="h-11 shimmer rounded-xl" />
+      </div>
+
+      {/* ── Stats Skeleton ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-20 shimmer rounded-xl" />
+        <div className="h-20 shimmer rounded-xl" />
+      </div>
+
+      {/* ── Personal Info Card Skeleton ── */}
+      <div className="glass-card-gold p-4 space-y-4" style={{ borderColor: 'rgba(212, 175, 55, 0.15)' }}>
+        <div className="flex justify-between items-center">
+          <div className="h-4 w-36 shimmer rounded-md" />
+          <div className="h-3 w-8 shimmer rounded-md" />
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="flex justify-between items-center border-b border-white/5 pb-2.5 last:border-0 last:pb-0">
+              <div className="h-3.5 w-20 shimmer rounded-md" />
+              <div className="h-3.5 w-32 shimmer rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </AppLayout>
+);
+
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const { userData, currentUser } = useAuth();
+  const { userData, currentUser, loading } = useAuth();
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -20,6 +101,10 @@ const UserDashboard = () => {
     else if (hour < 17) setGreeting('Good Afternoon');
     else setGreeting('Good Evening');
   }, []);
+
+  if (loading || !userData) {
+    return <DashboardSkeleton />;
+  }
 
   const statusColor = userData?.status === 'active' ? 'active' : 'inactive';
 
