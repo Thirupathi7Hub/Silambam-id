@@ -73,7 +73,7 @@ export const createUser = async (uid, userData) => {
     position:      userData.position,
     photo_url:     userData.photoURL,
     role:          'user',
-    status:        'active',
+    status:        userData.status || 'pending',
     created_at:    serverTimestamp(),
     updated_at:    serverTimestamp(),
   });
@@ -306,8 +306,30 @@ export const updateSettings = async (settingsData) => {
  * Calls callback immediately with current data, then on every change
  */
 export const subscribeToUser = (uid, callback) => {
-  // Fetch immediately
-  getUserById(uid).then(callback).catch(() => callback(null));
+  let active = true;
+  let retryCount = 0;
+  const maxRetries = 10;
+  let timeoutId = null;
+
+  const fetchUser = async () => {
+    try {
+      const data = await getUserById(uid);
+      if (!active) return;
+      
+      if (data) {
+        callback(data);
+      } else if (retryCount < maxRetries) {
+        retryCount++;
+        timeoutId = setTimeout(fetchUser, 1000); // retry every 1 second
+      } else {
+        callback(null); // final fallback
+      }
+    } catch (err) {
+      if (active) callback(null);
+    }
+  };
+
+  fetchUser();
 
   // Subscribe to real-time changes on this row
   const channel = supabase
@@ -316,13 +338,19 @@ export const subscribeToUser = (uid, callback) => {
       'postgres_changes',
       { event: '*', schema: 'public', table: TABLES.USERS, filter: `id=eq.${uid}` },
       (payload) => {
-        callback(payload.new ? _toUserShape(payload.new) : null);
+        if (active) {
+          callback(payload.new ? _toUserShape(payload.new) : null);
+        }
       }
     )
     .subscribe();
 
   // Return unsubscribe function
-  return () => supabase.removeChannel(channel);
+  return () => {
+    active = false;
+    if (timeoutId) clearTimeout(timeoutId);
+    supabase.removeChannel(channel);
+  };
 };
 
 // ── Shape converter: DB snake_case → app camelCase ──

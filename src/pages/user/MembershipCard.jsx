@@ -9,6 +9,7 @@ import AppLayout from '@/layouts/AppLayout';
 import { GoldButton } from '@/components/ui';
 import { formatDate, maskAadhaar } from '@/utils/helpers';
 import { VALID_TILL_YEAR } from '@/constants/app';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 // Card dimensions — matched to template image aspect ratio (840 × 1340 → 340 × 543)
 const W = 340;
@@ -222,7 +223,7 @@ CardBack.displayName = 'CardBack';
 
 // ── Main Page ─────────────────────────────────────────────────────────────
 const MembershipCard = () => {
-  const { userData } = useAuth();
+  const { userData, loading } = useAuth();
   const [showFront, setShowFront] = useState(true);
   const [downloading, setDownloading] = useState(false);
 
@@ -297,6 +298,10 @@ const MembershipCard = () => {
       setDownloading(false);
     }
   }, [userData, captureCard]);
+
+  if (loading) {
+    return <LoadingScreen message="Verifying membership card..." />;
+  }
 
   if (userData?.status !== 'active') {
     return (
