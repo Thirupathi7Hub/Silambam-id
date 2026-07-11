@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CreditCard, Download, User, MapPin, Shield, Clock, ChevronRight, Star, Trophy } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import AppLayout from '@/layouts/AppLayout';
 import { GlassCard, GoldButton, Badge, Avatar, StatsCard } from '@/components/ui';
@@ -106,7 +107,11 @@ const UserDashboard = () => {
     return <DashboardSkeleton />;
   }
 
-  const statusColor = userData?.status === 'active' ? 'active' : 'inactive';
+  const statusColor = userData?.status === 'active' 
+    ? 'active' 
+    : userData?.status === 'pending'
+    ? 'pending'
+    : 'inactive';
 
   return (
     <AppLayout showProfile={false}>
@@ -145,7 +150,7 @@ const UserDashboard = () => {
                 <h2 className="text-lg font-bold text-white truncate">{userData?.name || 'Loading...'}</h2>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant={statusColor}>
-                    {userData?.status === 'active' ? '● Active' : '● Inactive'}
+                    {userData?.status === 'active' ? '● Active' : userData?.status === 'pending' ? '● Pending Approval' : '● Inactive'}
                   </Badge>
                   <Badge variant="gold">{userData?.category || 'Member'}</Badge>
                 </div>
@@ -179,6 +184,25 @@ const UserDashboard = () => {
           </div>
         </motion.div>
 
+        {/* ── Pending Warning Banner ── */}
+        {userData?.status === 'pending' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-2xl p-4 bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
+          >
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-400 font-bold text-sm">
+              !
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-amber-400">Awaiting Admin Approval</p>
+              <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                Your registration has been submitted successfully. Once the TNSA administration approves your request, your official digital ID card will be generated and available for download.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* ── Quick Actions ── */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -186,9 +210,21 @@ const UserDashboard = () => {
           transition={{ delay: 0.15 }}
           className="grid grid-cols-2 gap-3"
         >
-          <GoldButton fullWidth onClick={() => navigate('/card')}
-            icon={<CreditCard size={16} />} size="md">
-            View Card
+          <GoldButton
+            fullWidth
+            onClick={() => {
+              if (userData?.status === 'pending') {
+                toast.error('Membership card is locked until admin approval.');
+              } else {
+                navigate('/card');
+              }
+            }}
+            variant={userData?.status === 'pending' ? 'ghost' : 'gold'}
+            className={userData?.status === 'pending' ? 'opacity-65' : ''}
+            icon={<CreditCard size={16} />}
+            size="md"
+          >
+            {userData?.status === 'pending' ? 'Card Locked' : 'View Card'}
           </GoldButton>
           <GoldButton fullWidth variant="ghost" onClick={() => navigate('/profile')}
             icon={<User size={16} />} size="md">

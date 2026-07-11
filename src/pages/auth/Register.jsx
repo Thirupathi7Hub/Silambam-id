@@ -123,13 +123,13 @@ const Register = () => {
         position:     allData.position,
         photoURL,
         role:         'user',
-        status:       'active',
+        status:       'pending',
       });
 
       // 5. Clear draft
       localStorage.removeItem(DRAFT_KEY);
 
-      toast.success(`Registered! Your ID: ${membershipId}`);
+      toast.success('Registration submitted! Awaiting admin approval.');
       navigate('/dashboard');
     } catch (err) {
       console.error(err);

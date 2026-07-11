@@ -1,7 +1,7 @@
 // Membership Card Page — TNSA card front/back using official template
 import React, { useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Printer, QrCode } from 'lucide-react';
+import { Download, Printer, QrCode, CreditCard } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -297,6 +297,24 @@ const MembershipCard = () => {
       setDownloading(false);
     }
   }, [userData, captureCard]);
+
+  if (userData?.status !== 'active') {
+    return (
+      <AppLayout title="Membership Card" showBack>
+        <div className="flex flex-col items-center justify-center text-center p-6 space-y-5 min-h-[50vh] animate-pulse">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-500">
+            <CreditCard size={32} className="opacity-70" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">Card Locked</h2>
+            <p className="text-sm text-white/50 mt-2 max-w-xs mx-auto leading-relaxed">
+              Your TNSA membership is currently pending admin approval. You will be able to view and download your ID card once approved.
+            </p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout title="Membership Card" showBack>
