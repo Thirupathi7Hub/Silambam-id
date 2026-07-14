@@ -35,7 +35,8 @@ const AdminLogin = () => {
       }
 
       toast.success('Welcome, Admin!');
-      navigate('/admin');
+      // ✅ Do NOT manually navigate — let AdminPublicRoute redirect
+      // once isAdmin=true is confirmed in auth state (avoids race condition)
     } catch (err) {
       const msg = err.message?.toLowerCase().includes('invalid login')
         ? 'Invalid email or password'

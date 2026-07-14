@@ -24,29 +24,41 @@ const AdminSettings     = lazy(() => import('@/pages/admin/Settings'));
 const VerifyMember = lazy(() => import('@/pages/verify/VerifyMember'));
 const NotFound     = lazy(() => import('@/pages/NotFound'));
 
-// ── Auth Guard: Redirect to login if not authenticated ──
+// ── Member Route: authenticated non-admin users ──
+// Also blocks admins from accidentally landing on user pages
 const PrivateRoute = ({ children }) => {
-  const { isLoggedIn, loading } = useAuth();
+  const { isLoggedIn, isAdmin, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  return isLoggedIn ? children : <Navigate to="/login" replace />;
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
+  if (isAdmin) return <Navigate to="/admin" replace />; // admin on user page → push to admin
+  return children;
 };
 
-// ── Admin Guard: Only admin can access ──
+// ── Admin Route: confirmed admins only ──
 const AdminRoute = ({ children }) => {
   const { isLoggedIn, isAdmin, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!isLoggedIn) return <Navigate to="/admin/login" replace />;
-  if (!isAdmin)   return <Navigate to="/dashboard" replace />;
+  if (!isAdmin) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
-// ── Public Guard: Redirect logged-in users to their dashboard ──
+// ── Public Route: /login and /register — redirect logged-in users ──
 const PublicRoute = ({ children }) => {
   const { isLoggedIn, isAdmin, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (isLoggedIn) {
-    return <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />;
-  }
+  if (isLoggedIn) return <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />;
+  return children;
+};
+
+// ── Admin Public Route: /admin/login only ──
+// Only redirects to /admin if the user is CONFIRMED as an admin (isAdmin = true).
+// If user is logged in but NOT admin, it stays on the page so AdminLogin
+// can detect them and show "Access denied".
+const AdminPublicRoute = ({ children }) => {
+  const { isLoggedIn, isAdmin, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (isLoggedIn && isAdmin) return <Navigate to="/admin" replace />;
   return children;
 };
 
@@ -60,9 +72,9 @@ const AppRouter = () => {
         <Route path="/setup"    element={<AdminSetup />} />
 
         {/* ── Auth ── */}
-        <Route path="/login"          element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/admin/login"    element={<PublicRoute><AdminLogin /></PublicRoute>} />
-        <Route path="/register"       element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/login"           element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/admin/login"     element={<AdminPublicRoute><AdminLogin /></AdminPublicRoute>} />
+        <Route path="/register"        element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
         {/* ── User ── */}
