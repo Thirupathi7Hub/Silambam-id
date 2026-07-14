@@ -1,104 +1,93 @@
-// Notification Service — Email via EmailJS + SMS via Supabase Edge Function
+// Notification Service — Email via EmailJS + SMS via Fast2SMS (both 100% browser-side)
 // ─────────────────────────────────────────────────────────────────────────────
-// SETUP REQUIRED:
+// SETUP — Add these 4 keys to your .env file (and Vercel Environment Variables):
 //
-// 1. EMAIL (EmailJS):
-//    a. Create a free account at https://www.emailjs.com
-//    b. Add a Gmail/Outlook email service → note the SERVICE_ID
-//    c. Create an email template with these variables:
-//         {{to_email}}, {{member_name}}, {{membership_id}},
-//         {{district}}, {{club_name}}, {{valid_till}}, {{login_url}}
-//    d. Note the TEMPLATE_ID and PUBLIC_KEY
-//    e. Add to your .env:
-//         VITE_EMAILJS_SERVICE_ID=service_xxxxxxx
-//         VITE_EMAILJS_TEMPLATE_ID=template_xxxxxxx
-//         VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx
+//   VITE_EMAILJS_SERVICE_ID=service_xxxxxxx   ← from emailjs.com dashboard
+//   VITE_EMAILJS_TEMPLATE_ID=template_xxxxxxx ← from emailjs.com dashboard
+//   VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx   ← from emailjs.com account
+//   VITE_FAST2SMS_API_KEY=xxxxxxxxxxxxxxx     ← from fast2sms.com Dev API
 //
-// 2. SMS (Supabase Edge Function):
-//    a. Go to your Supabase project → Edge Functions
-//    b. Create a new function named "send-sms"
-//    c. Paste the code from: /supabase/functions/send-sms/index.ts
-//    d. Set secret: FAST2SMS_API_KEY in Supabase dashboard (Settings → Edge Functions)
-//    e. Add to your .env:
-//         VITE_SUPABASE_FUNCTIONS_URL=https://omlpsbmwfqmajpdxxows.supabase.co/functions/v1
+// HOW TO GET KEYS:
+//   Email → https://www.emailjs.com (free, 200 emails/month)
+//   SMS   → https://www.fast2sms.com (free credits on signup)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import emailjs from '@emailjs/browser';
-import { supabase } from '@/supabase/config';
 import { VALID_TILL_YEAR } from '@/constants/app';
 
 const EMAILJS_SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID;
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
 const EMAILJS_PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-const SUPABASE_FN_URL     = import.meta.env.VITE_SUPABASE_URL
-  ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
-  : null;
+const FAST2SMS_API_KEY    = import.meta.env.VITE_FAST2SMS_API_KEY;
 
 // ── Email Notification ────────────────────────────────────────────────────────
-/**
- * Send an approval email to the member via EmailJS.
- * @param {Object} member - The member object with name, email, membershipId, district, clubName
- */
 export const sendApprovalEmail = async (member) => {
   if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-    console.warn('EmailJS env vars not configured. Skipping email notification.');
+    console.warn('EmailJS env vars not configured. Skipping email.');
     return { success: false, error: 'EmailJS not configured' };
   }
 
   try {
-    const templateParams = {
-      to_email:     member.email,
-      member_name:  member.name,
-      membership_id: member.membershipId,
-      district:     member.district,
-      club_name:    member.clubName,
-      valid_till:   `December ${VALID_TILL_YEAR}`,
-      login_url:    `${window.location.origin}/login`,
-    };
-
-    const response = await emailjs.send(
+    await emailjs.send(
       EMAILJS_SERVICE_ID,
       EMAILJS_TEMPLATE_ID,
-      templateParams,
+      {
+        to_email:      member.email,
+        member_name:   member.name,
+        membership_id: member.membershipId,
+        district:      member.district,
+        club_name:     member.clubName,
+        valid_till:    `December ${VALID_TILL_YEAR}`,
+        login_url:     `${window.location.origin}/login`,
+      },
       EMAILJS_PUBLIC_KEY
     );
-
-    console.log('Email sent successfully:', response.status);
     return { success: true };
   } catch (err) {
-    console.error('EmailJS send failed:', err);
+    console.error('Email send failed:', err);
     return { success: false, error: err.message };
   }
 };
 
-// ── SMS Notification ──────────────────────────────────────────────────────────
-/**
- * Send an approval SMS to the member via Supabase Edge Function.
- * @param {Object} member - The member object with name, mobile, membershipId
- */
+// ── SMS Notification (Direct browser → Fast2SMS REST API) ─────────────────────
 export const sendApprovalSMS = async (member) => {
-  if (!SUPABASE_FN_URL) {
-    console.warn('Supabase URL not configured. Skipping SMS notification.');
-    return { success: false, error: 'Supabase not configured' };
+  if (!FAST2SMS_API_KEY) {
+    console.warn('VITE_FAST2SMS_API_KEY not configured. Skipping SMS.');
+    return { success: false, error: 'Fast2SMS not configured' };
   }
 
-  // Sanitize mobile number (10 digits, Indian)
   const mobile = (member.mobile || '').replace(/\D/g, '').slice(-10);
   if (mobile.length !== 10) {
     console.warn('Invalid mobile number, skipping SMS:', member.mobile);
     return { success: false, error: 'Invalid mobile number' };
   }
 
-  const message = `Dear ${member.name}, your TNSA Membership has been APPROVED! Your ID: ${member.membershipId}. Login to download your digital card: ${window.location.origin}/login - TNSA`;
+  const message =
+    `Dear ${member.name}, your TNSA Membership (ID: ${member.membershipId}) has been APPROVED! Login to download your digital ID card: ${window.location.origin}/login - TNSA`;
 
   try {
-    const { data, error } = await supabase.functions.invoke('send-sms', {
-      body: { mobile, message },
+    const params = new URLSearchParams({
+      route:    'q',
+      message,
+      language: 'english',
+      flash:    '0',
+      numbers:  mobile,
     });
 
-    if (error) throw new Error(error.message);
-    console.log('SMS sent successfully:', data);
+    const response = await fetch(
+      `https://www.fast2sms.com/dev/bulkV2?${params.toString()}`,
+      {
+        method:  'GET',
+        headers: { authorization: FAST2SMS_API_KEY },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || data.return === false) {
+      throw new Error(data.message?.[0] || 'Fast2SMS API error');
+    }
+
     return { success: true };
   } catch (err) {
     console.error('SMS send failed:', err);
@@ -106,11 +95,7 @@ export const sendApprovalSMS = async (member) => {
   }
 };
 
-// ── Combined Notification ─────────────────────────────────────────────────────
-/**
- * Send both email and SMS approval notifications.
- * Returns { email: { success }, sms: { success } }
- */
+// ── Combined: email + SMS ─────────────────────────────────────────────────────
 export const sendApprovalNotifications = async (member) => {
   const [emailResult, smsResult] = await Promise.allSettled([
     sendApprovalEmail(member),
@@ -119,6 +104,6 @@ export const sendApprovalNotifications = async (member) => {
 
   return {
     email: emailResult.status === 'fulfilled' ? emailResult.value : { success: false },
-    sms:   smsResult.status === 'fulfilled'   ? smsResult.value   : { success: false },
+    sms:   smsResult.status  === 'fulfilled'  ? smsResult.value  : { success: false },
   };
 };
