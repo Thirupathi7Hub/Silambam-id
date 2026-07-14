@@ -17,6 +17,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { VALID_TILL_YEAR, APP_PHONE, APP_EMAIL, APP_INSTAGRAM, APP_FACEBOOK } from '@/constants/app';
 
 import { CardFront, CardBack } from '@/pages/user/MembershipCard';
+import { sendApprovalWhatsApp } from '@/services/whatsapp';
 
 const DOWNLOAD_SCALE = 2.470588;
 
@@ -106,6 +107,21 @@ const AdminMemberDetail = () => {
     try {
       await updateUser(uid, { status });
       toast.success(`Status updated to ${status}`);
+
+      // Send WhatsApp approval notification when admin approves
+      if (status === 'active' && member?.mobile) {
+        const result = await sendApprovalWhatsApp(
+          member.mobile,
+          member.name,
+          member.membershipId
+        );
+        if (result.success) {
+          toast.success(`✅ WhatsApp notification sent to ${member.mobile}`);
+        } else {
+          toast(`⚠️ Status updated but WhatsApp notification failed`, { icon: '⚠️' });
+        }
+      }
+
       fetchMember();
     } catch (err) {
       toast.error('Failed to update status');
