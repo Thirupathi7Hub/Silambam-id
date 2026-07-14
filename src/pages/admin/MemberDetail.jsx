@@ -113,21 +113,21 @@ const AdminMemberDetail = () => {
         const number = phone.length === 10 ? `91${phone}` : phone; // add India code
 
         const message = [
-          `✅ Dear ${member.name},`,
+          `Dear ${member.name},`,
           ``,
-          `Your *TNSA Membership* has been *approved!* 🎉`,
+          `Your *TNSA Membership* has been *approved.*`,
           ``,
-          `📋 *Membership ID:* ${member.membershipId}`,
+          `*Membership ID:* ${member.membershipId}`,
           ``,
           `Please login to view and download your official digital ID card:`,
-          `👉 https://silambam-id.vercel.app`,
+          `https://silambam-id.vercel.app`,
           ``,
-          `— Tamilnadu Silambattam Association`,
+          `- Tamilnadu Silambattam Association`,
         ].join('\n');
 
         const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
         window.open(waUrl, '_blank');
-        toast('📲 WhatsApp opened — tap Send to notify the member', { icon: '💬' });
+        toast('WhatsApp opened — tap Send to notify the member', { icon: '📲' });
       }
 
       fetchMember();
