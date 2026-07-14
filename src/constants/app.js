@@ -10,15 +10,14 @@ export const APP_FACEBOOK = 'Tamilnadu Silambattam';
 export const VALID_TILL_YEAR = 2027;
 
 export const CATEGORIES = [
-  'Player',
-  'Coach',
-  'Referee',
-  'Organizer',
-  'Life Member',
-  'Associate Member',
-  'Student',
+  'Below 10',
+  'Sub Junior',
   'Junior',
   'Senior',
+  'Above',
+  'Master',
+  'Organizer',
+  'Associate Member',
 ];
 
 export const POSITIONS = [
@@ -30,6 +29,10 @@ export const POSITIONS = [
   'Joint Secretary',
   'District Secretary',
   'District President',
+  'District Referee',
+  'State Referee',
+  'National Referee',
+  ' President',
   'Coach',
   'Referee',
   'Executive Member',

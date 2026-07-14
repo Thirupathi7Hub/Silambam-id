@@ -17,6 +17,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { VALID_TILL_YEAR, APP_PHONE, APP_EMAIL, APP_INSTAGRAM, APP_FACEBOOK } from '@/constants/app';
 
 import { CardFront, CardBack } from '@/pages/user/MembershipCard';
+import { sendApprovalNotifications } from '@/services/notifications';
 
 const DOWNLOAD_SCALE = 2.470588;
 
@@ -102,11 +103,31 @@ const AdminMemberDetail = () => {
     }
   };
 
-  const handleStatusChange = async (status) => {
+  const handleStatusChange = async (newStatus) => {
+    const wasNotActive = member?.status !== 'active';
     try {
-      await updateUser(uid, { status });
-      toast.success(`Status updated to ${status}`);
+      await updateUser(uid, { status: newStatus });
+      toast.success(`Status updated to ${newStatus}`);
       fetchMember();
+
+      // Send approval notifications only when promoting to 'active'
+      if (newStatus === 'active' && wasNotActive) {
+        const freshMember = await import('@/firebase/firestore')
+          .then(m => m.getUserById(uid));
+        const targetMember = freshMember || { ...member, status: 'active' };
+
+        toast.loading('Sending approval notifications...', { id: 'notif' });
+        const { email, sms } = await sendApprovalNotifications(targetMember);
+
+        const parts = [];
+        if (email.success) parts.push('Email ✓');
+        else parts.push('Email ✗ (check EmailJS config)');
+        if (sms.success) parts.push('SMS ✓');
+        else parts.push('SMS ✗ (check Edge Function)');
+
+        toast.dismiss('notif');
+        toast.success(`Notifications: ${parts.join(' | ')}`, { duration: 5000 });
+      }
     } catch (err) {
       toast.error('Failed to update status');
     }
