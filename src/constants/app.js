@@ -14,6 +14,8 @@ export const CATEGORIES = [
   'Sub Junior',
   'Junior',
   'Senior',
+  'Youth',
+  'Open',
   'Above',
   'Master',
   'Organizer',
