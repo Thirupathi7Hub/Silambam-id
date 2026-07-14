@@ -6,6 +6,7 @@ import LoadingScreen from '@/components/ui/LoadingScreen';
 
 // ── Lazy-loaded pages ──
 const Login        = lazy(() => import('@/pages/auth/Login'));
+const AdminLogin   = lazy(() => import('@/pages/auth/AdminLogin'));
 const Register     = lazy(() => import('@/pages/auth/Register'));
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
 const AdminSetup   = lazy(() => import('@/pages/auth/AdminSetup'));
@@ -34,7 +35,7 @@ const PrivateRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { isLoggedIn, isAdmin, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (!isLoggedIn) return <Navigate to="/login" replace />;
+  if (!isLoggedIn) return <Navigate to="/admin/login" replace />;
   if (!isAdmin)   return <Navigate to="/dashboard" replace />;
   return children;
 };
@@ -60,6 +61,7 @@ const AppRouter = () => {
 
         {/* ── Auth ── */}
         <Route path="/login"          element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/admin/login"    element={<PublicRoute><AdminLogin /></PublicRoute>} />
         <Route path="/register"       element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
