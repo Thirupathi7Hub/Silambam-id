@@ -62,18 +62,29 @@ export const associationDetailsSchema = z.object({
     .string()
     .min(1, 'Please select a district'),
 
-  clubName: z
-    .string()
-    .min(2, 'Club name must be at least 2 characters')
-    .max(100, 'Club name is too long'),
-
   position: z
     .string()
     .min(1, 'Please select a position'),
 
+  clubName: z
+    .string()
+    .optional(),
+
   category: z
     .string()
     .min(1, 'Please select a category'),
+}).superRefine((data, ctx) => {
+  const pos = data.position?.toLowerCase() || '';
+  const isClubOptional = pos.includes('president');
+  if (!isClubOptional) {
+    if (!data.clubName || data.clubName.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Club name must be at least 2 characters',
+        path: ['clubName'],
+      });
+    }
+  }
 });
 
 // ── Full Registration Schema ──
@@ -111,13 +122,21 @@ export const profileUpdateSchema = z.object({
     .min(10, 'Address must be at least 10 characters')
     .max(300),
 
-  clubName: z
-    .string()
-    .min(2, 'Club name required')
-    .max(100),
-
   position: z.string().min(1, 'Position required'),
   category: z.string().min(1, 'Category required'),
+  clubName: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const pos = data.position?.toLowerCase() || '';
+  const isClubOptional = pos.includes('president');
+  if (!isClubOptional) {
+    if (!data.clubName || data.clubName.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Club name required',
+        path: ['clubName'],
+      });
+    }
+  }
 });
 
 // ── Settings Schema ──

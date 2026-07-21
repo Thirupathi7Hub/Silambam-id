@@ -223,34 +223,38 @@ const Register = () => {
             )}
 
             {/* ── Step 2: Association Details ── */}
-            {step === 2 && (
-              <motion.div key="step2" custom={1} variants={slideVariants}
-                initial="enter" animate="center" exit="exit"
-                transition={{ duration: 0.25 }} className="p-6 space-y-4">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Building2 size={18} className="text-gold" /> Association Details
-                </h2>
-                <form onSubmit={step2.handleSubmit(handleStep2)} className="space-y-4">
-                  <SelectField label="District" options={DISTRICTS.map(d => ({ value: d.name, label: `${d.name} (${d.code})` }))}
-                    placeholder="Select your district" error={step2.formState.errors.district?.message} required
-                    {...step2.register('district')} />
-                  <InputField label="Club Name" placeholder="Your club name" icon={<Building2 size={14} />}
-                    error={step2.formState.errors.clubName?.message} required
-                    {...step2.register('clubName')} />
-                  <SelectField label="Position in TNSA" options={POSITIONS} placeholder="Select position"
-                    error={step2.formState.errors.position?.message} required
-                    {...step2.register('position')} />
-                  <SelectField label="Category" options={CATEGORIES} placeholder="Select category"
-                    error={step2.formState.errors.category?.message} required
-                    {...step2.register('category')} />
-                  <div className="flex gap-3">
-                    <GoldButton type="button" variant="ghost" fullWidth onClick={() => setStep(1)}
-                      icon={<ChevronLeft size={16} />}>Back</GoldButton>
-                    <GoldButton type="submit" fullWidth icon={<ChevronRight size={16} />}>Next</GoldButton>
-                  </div>
-                </form>
-              </motion.div>
-            )}
+            {step === 2 && (() => {
+              const selectedPosition = step2.watch('position');
+              const isClubOptional = selectedPosition?.toLowerCase().includes('president');
+              return (
+                <motion.div key="step2" custom={1} variants={slideVariants}
+                  initial="enter" animate="center" exit="exit"
+                  transition={{ duration: 0.25 }} className="p-6 space-y-4">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Building2 size={18} className="text-gold" /> Association Details
+                  </h2>
+                  <form onSubmit={step2.handleSubmit(handleStep2)} className="space-y-4">
+                    <SelectField label="District" options={DISTRICTS.map(d => ({ value: d.name, label: `${d.name} (${d.code})` }))}
+                      placeholder="Select your district" error={step2.formState.errors.district?.message} required
+                      {...step2.register('district')} />
+                    <SelectField label="Position in TNSA" options={POSITIONS} placeholder="Select position"
+                      error={step2.formState.errors.position?.message} required
+                      {...step2.register('position')} />
+                    <InputField label={isClubOptional ? "Club Name (Optional)" : "Club Name"} placeholder={isClubOptional ? "Your club name (optional)" : "Your club name"} icon={<Building2 size={14} />}
+                      error={step2.formState.errors.clubName?.message} required={!isClubOptional}
+                      {...step2.register('clubName')} />
+                    <SelectField label="Category" options={CATEGORIES} placeholder="Select category"
+                      error={step2.formState.errors.category?.message} required
+                      {...step2.register('category')} />
+                    <div className="flex gap-3">
+                      <GoldButton type="button" variant="ghost" fullWidth onClick={() => setStep(1)}
+                        icon={<ChevronLeft size={16} />}>Back</GoldButton>
+                      <GoldButton type="submit" fullWidth icon={<ChevronRight size={16} />}>Next</GoldButton>
+                    </div>
+                  </form>
+                </motion.div>
+              );
+            })()}
 
             {/* ── Step 3: Photo Upload ── */}
             {step === 3 && (
@@ -322,9 +326,9 @@ const Register = () => {
                     ['Mobile', formData.mobile],
                     ['Email', formData.email],
                     ['District', formData.district],
+                    ['Position', formData.position],
                     ['Club Name', formData.clubName],
                     ['Category', formData.category],
-                    ['Position', formData.position],
                   ].map(([label, value]) => (
                     <div key={label} className="flex justify-between py-2 border-b border-white/5">
                       <span className="text-white/50">{label}</span>
