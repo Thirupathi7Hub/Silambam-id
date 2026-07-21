@@ -14,39 +14,40 @@ export const serverTimestamp = () => new Date().toISOString();
 // ── Membership ID Generation (atomic via RPC) ──
 /**
  * Generate next membership ID for a district.
- * Uses a Supabase Postgres function for atomicity (no duplicate IDs).
- * Format: CHE00001, MDU00127, etc.
+ * Format: ARL-001-TNSA-1, ARL-001-TNSA-2, ...
+ * districtFullCode example: 'ARL-001-TNSA'
  */
-export const generateMembershipId = async (districtCode) => {
+export const generateMembershipId = async (districtFullCode) => {
   // Try RPC function first (set up in Supabase SQL editor)
   const { data, error } = await supabase.rpc('generate_membership_id', {
-    p_district_code: districtCode,
+    p_district_code: districtFullCode,
   });
 
   if (error) {
     // Fallback: manual counter upsert
     console.warn('RPC failed, using manual counter:', error.message);
-    return await _manualMembershipId(districtCode);
+    return await _manualMembershipId(districtFullCode);
   }
-  return data; // e.g. 'CHE00003'
+  return data; // e.g. 'ARL-001-TNSA-1'
 };
 
-const _manualMembershipId = async (districtCode) => {
+const _manualMembershipId = async (districtFullCode) => {
   const { data: existing } = await supabase
     .from(TABLES.DISTRICT_COUNTERS)
     .select('last_number')
-    .eq('district_code', districtCode)
+    .eq('district_code', districtFullCode)
     .single();
 
   const nextNumber = (existing?.last_number ?? 0) + 1;
 
   await supabase.from(TABLES.DISTRICT_COUNTERS).upsert({
-    district_code: districtCode,
+    district_code: districtFullCode,
     last_number:   nextNumber,
     updated_at:    serverTimestamp(),
   }, { onConflict: 'district_code' });
 
-  return `${districtCode}${String(nextNumber).padStart(5, '0')}`;
+  // Format: ARL-001-TNSA-1
+  return `${districtFullCode}-${nextNumber}`;
 };
 
 // ── User / Member Operations ──

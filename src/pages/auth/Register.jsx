@@ -10,7 +10,7 @@ import { registerWithEmail } from '@/firebase/auth';
 import { createUser, generateMembershipId } from '@/firebase/firestore';
 import { uploadMemberPhoto } from '@/firebase/storage';
 import { personalDetailsSchema, associationDetailsSchema } from '@/utils/validators';
-import { DISTRICTS, getDistrictCode } from '@/constants/districts';
+import { DISTRICTS, getDistrictCode, getDistrictFullCode } from '@/constants/districts';
 import { CATEGORIES, POSITIONS, GENDERS } from '@/constants/app';
 import { GoldButton, InputField, SelectField, TextareaField, ProgressBar, GoldDivider } from '@/components/ui';
 
@@ -86,8 +86,9 @@ const Register = () => {
     setLoading(true);
     try {
       const allData = { ...formData };
-      const districtCode = getDistrictCode(allData.district);
-      if (!districtCode) throw new Error('Invalid district selected');
+      const districtCode     = getDistrictCode(allData.district);
+      const districtFullCode = getDistrictFullCode(allData.district);
+      if (!districtCode || !districtFullCode) throw new Error('Invalid district selected');
 
       // 1. Register with Firebase Auth
       const email    = allData.email;
@@ -95,8 +96,8 @@ const Register = () => {
       const cred = await registerWithEmail(email, password);
       const uid  = cred.user.uid;
 
-      // 2. Generate Membership ID
-      const membershipId = await generateMembershipId(districtCode);
+      // 2. Generate Membership ID (format: ARL-001-TNSA-1)
+      const membershipId = await generateMembershipId(districtFullCode);
 
       // 3. Upload photo
       let photoURL = '';
